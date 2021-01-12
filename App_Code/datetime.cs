@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using duretoryApi.App_Code;
 
@@ -33,6 +34,28 @@ namespace duretoryApi.App_Code
                 default:
                     return null;
             }
+        }
+
+        public string differentime(string beforedate)
+        {
+            DateTime beforeDate = DateTime.Parse(beforedate), nowDate = DateTime.Now;
+            TimeSpan ts = nowDate.Subtract(beforeDate);
+            switch (ts.Days)
+            {
+                case 0:
+                    switch (ts.Hours)
+                    {
+                        case 0:
+                            switch (ts.Minutes)
+                            {
+                                case 0:
+                                    return $"{ts.Seconds} Secs Before";
+                            }
+                            return $"{ts.Minutes} Mins Before";
+                    }
+                    return $"{ts.Hours} Hours Before";
+            }
+            return $"{ts.Days} Days Before";
         }
     }
 }
