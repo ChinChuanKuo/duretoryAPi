@@ -8,7 +8,6 @@ namespace duretoryApi.Models
         public sItemsModels GetSearchModels(otherData otherData, string cuurip)
         {
             database database = new database();
-            
             return new sItemsModels() { status = "nodata" };
         }
     }
