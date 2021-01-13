@@ -42,11 +42,9 @@ namespace duretoryApi.Controllers
                 {
                     await Request.Form.Files[0].CopyToAsync(fileStream);
                     //string src = mainRows.Rows[0]["flImages"].ToString().TrimEnd() == "1" && mainRows.Rows[0]["flShowed"].ToString().TrimEnd() == "0" ? $"{database.connectionString("sysFiles")}{mainRows.Rows[0]["original"].ToString().TrimEnd()}({mainRows.Rows[0]["encryption"].ToString().TrimEnd()}){mainRows.Rows[0]["extension"].ToString().TrimEnd()}" : $"{filePath}{original}({encryption}){extension}";
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        fileStream.CopyTo(memoryStream);
-                        return Json(new sSiteModels() { images = mainRows.Rows[0]["flImages"].ToString().TrimEnd() == "1", videos = mainRows.Rows[0]["flVideos"].ToString().TrimEnd() == "1", audios = mainRows.Rows[0]["flAudios"].ToString().TrimEnd() == "1", files = memoryStream.GetBuffer(), status = "istrue" });
-                    }
+                    byte[] fileByte = new byte[fileStream.Length];
+                    fileStream.Read(fileByte, 0, fileByte.Length);
+                    return Json(new sSiteModels() { images = mainRows.Rows[0]["flImages"].ToString().TrimEnd() == "1", videos = mainRows.Rows[0]["flVideos"].ToString().TrimEnd() == "1", audios = mainRows.Rows[0]["flAudios"].ToString().TrimEnd() == "1", files = fileByte, status = "istrue" });
                 }
             }
             return Json(new sSiteModels() { status = "nodata" });
