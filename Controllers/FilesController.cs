@@ -45,7 +45,7 @@ namespace duretoryApi.Controllers
                     using (var memoryStream = new MemoryStream())
                     {
                         fileStream.CopyTo(memoryStream);
-                        return Json(new sSiteModels() { images = mainRows.Rows[0]["flImages"].ToString().TrimEnd() == "1", videos = mainRows.Rows[0]["flVideos"].ToString().TrimEnd() == "1", audios = mainRows.Rows[0]["flAudios"].ToString().TrimEnd() == "1", files = memoryStream.ToArray(), status = "istrue" });
+                        return Json(new sSiteModels() { images = mainRows.Rows[0]["flImages"].ToString().TrimEnd() == "1", videos = mainRows.Rows[0]["flVideos"].ToString().TrimEnd() == "1", audios = mainRows.Rows[0]["flAudios"].ToString().TrimEnd() == "1", files = memoryStream.GetBuffer(), status = "istrue" });
                     }
                 }
             }
