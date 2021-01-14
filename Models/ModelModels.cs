@@ -34,9 +34,36 @@ namespace duretoryApi.Models
         public string status { get; set; }
     }
 
+    public class iFormData
+    {
+        public string formId { get; set; }
+        public string tile { get; set; }
+        public string desc { get; set; }
+        public List<Dictionary<string, object>> items { get; set; }
+        public string newid { get; set; }
+    }
+
     public class iItemsData
     {
         public List<Dictionary<string, object>> items { get; set; }
+        public string newid { get; set; }
+    }
+
+    public class sRowsModels
+    {
+        [Required]
+        public string formId { get; set; }
+        [Required]
+        public string tile { get; set; }
+        [Required]
+        public List<Dictionary<string, object>> items { get; set; }
+        [Required]
+        public string status { get; set; }
+    }
+
+    public class dFormData
+    {
+        public string formId { get; set; }
         public string newid { get; set; }
     }
 

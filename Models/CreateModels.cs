@@ -38,7 +38,7 @@ namespace duretoryApi.Models
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
                         foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @iid;", dbparamlist).Rows)
                         {
-                            optionitems.Add(new Dictionary<string, object>() { { "optionPadding", drs["padding"].ToString().TrimEnd() == "1" }, { "value", drs["value"].ToString().TrimEnd() } });
+                            optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
                         }
                         break;
                     case "collections":
@@ -83,66 +83,64 @@ namespace duretoryApi.Models
                 case 0:
                     return new statusModels() { status = "error" };
             }
-            switch (checkFolderType(iItemsData.items[0]["outValue"].ToString().TrimEnd()))
+            foreach (var item in iItemsData.items)
             {
-                case true:
-                    switch (iItemsData.items[0]["outValue"].ToString().TrimEnd())
-                    {
-                        case "collections":
-                            foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(iItemsData.items[0]["collectitems"].ToString().TrimEnd()))
+                switch (item["outValue"].ToString().TrimEnd())
+                {
+                    case "collections":
+                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectitems"].ToString().TrimEnd()))
+                        {
+                            switch (bool.Parse(collectitem["collDelete"].ToString().TrimEnd()))
                             {
-                                System.Console.WriteLine(bool.Parse(collectitem["collDelete"].ToString().TrimEnd()));
-                                switch (bool.Parse(collectitem["collDelete"].ToString().TrimEnd()))
-                                {
-                                    case true:
-                                        dbparamlist.Clear();
-                                        dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
-                                        dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
-                                        if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
-                                        {
-                                            return new statusModels() { status = "error" };
-                                        }
-                                        break;
-                                    default:
-                                        switch (bool.Parse(collectitem["collInsert"].ToString().TrimEnd()))
-                                        {
-                                            case true:
-                                                dbparamlist.Clear();
-                                                dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
-                                                dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
-                                                dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
-                                                dbparamlist.Add(new dbparam("@value", collectitem["value"].ToString().TrimEnd()));
-                                                if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
-                                                {
-                                                    return new statusModels() { status = "error" };
-                                                }
-                                                break;
-                                        }
-                                        break;
-                                }
+                                case true:
+                                    dbparamlist.Clear();
+                                    dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
+                                    if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
+                                    {
+                                        return new statusModels() { status = "error" };
+                                    }
+                                    break;
+                                default:
+                                    switch (bool.Parse(collectitem["collInsert"].ToString().TrimEnd()))
+                                    {
+                                        case true:
+                                            dbparamlist.Clear();
+                                            dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@value", collectitem["value"].ToString().TrimEnd()));
+                                            if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
+                                            {
+                                                return new statusModels() { status = "error" };
+                                            }
+                                            break;
+                                    }
+                                    break;
                             }
-                            break;
-                        default:
-                            foreach (var answeritem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(iItemsData.items[0]["answeritems"].ToString().TrimEnd()))
+                        }
+                        break;
+                    case "radio":
+                    case "checkbox":
+                        foreach (var answeritem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["answeritems"].ToString().TrimEnd()))
+                        {
+                            switch (bool.Parse(answeritem["showAnswer"].ToString().TrimEnd()))
                             {
-                                switch (bool.Parse(answeritem["showAnswer"].ToString().TrimEnd()))
-                                {
-                                    case true:
-                                        dbparamlist.Clear();
-                                        dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
-                                        dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
-                                        dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
-                                        dbparamlist.Add(new dbparam("@value", answeritem["value"].ToString().TrimEnd()));
-                                        if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
-                                        {
-                                            return new statusModels() { status = "error" };
-                                        }
-                                        break;
-                                }
+                                case true:
+                                    dbparamlist.Clear();
+                                    dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@value", answeritem["value"].ToString().TrimEnd()));
+                                    if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
+                                    {
+                                        return new statusModels() { status = "error" };
+                                    }
+                                    break;
                             }
-                            break;
-                    }
-                    break;
+                        }
+                        break;
+                }
             }
             return new statusModels() { status = "istrue" };
         }
@@ -159,24 +157,15 @@ namespace duretoryApi.Models
                         case "checkbox":
                         case "droplist":
                             return $"{item["title"].ToString().TrimEnd()}尚未選擇項目";
+                        case "image":
+                        case "collections":
+                            return $"{item["title"].ToString().TrimEnd()}尚未上傳圖檔";
                         default:
                             return $"{item["title"].ToString().TrimEnd()}尚未填寫資訊";
                     }
                 }
             }
             return "";
-        }
-
-        public bool checkFolderType(string value)
-        {
-            switch (value)
-            {
-                case "radio":
-                case "checkbox":
-                case "collections":
-                    return true;
-            }
-            return false;
         }
     }
 }
