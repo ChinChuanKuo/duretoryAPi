@@ -21,7 +21,7 @@ namespace duretoryApi.Models
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
             foreach (DataRow dr in mainRows.Rows)
             {
-                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>(), answeritems = new List<Dictionary<string, object>>(), collectitems = new List<Dictionary<string, object>>();
+                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>(), answeritems = new List<Dictionary<string, object>>();
                 switch (dr["outValue"].ToString().TrimEnd())
                 {
                     case "radio":
@@ -41,16 +41,8 @@ namespace duretoryApi.Models
                             optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
                         }
                         break;
-                    case "collections":
-                        dbparamlist.Clear();
-                        dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
-                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @iid;", dbparamlist).Rows)
-                        {
-                            collectitems.Add(new Dictionary<string, object>() { { "id", drs["id"].ToString().TrimEnd() }, { "collImage", true }, { "collVideo", false }, { "collAudio", false }, { "value", drs["value"].ToString().TrimEnd() }, { "collInsert", false }, { "collDelete", false } });
-                        }
-                        break;
                 }
-                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", "" }, { "showMenu", false }, { "showDrop", false }, { "showFile", false }, { "showImage", false }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collectitems", collectitems.ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() } });
+                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", "" }, { "showMenu", false }, { "showDrop", false }, { "showFile", false }, { "showImage", false }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collectionIndex", 0 }, { "collectionitems", new List<Dictionary<string, object>>().ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() } });
             }
             return new sItemModels() { items = items, status = "istrue" };
         }
@@ -88,26 +80,26 @@ namespace duretoryApi.Models
                 switch (item["outValue"].ToString().TrimEnd())
                 {
                     case "collections":
-                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectitems"].ToString().TrimEnd()))
+                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectionitems"].ToString().TrimEnd()))
                         {
-                            switch (bool.Parse(collectitem["collDelete"].ToString().TrimEnd()))
+                            switch (bool.Parse(collectitem["collectionDelete"].ToString().TrimEnd()))
                             {
                                 case true:
                                     dbparamlist.Clear();
                                     dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
-                                    dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                     if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
                                     {
                                         return new statusModels() { status = "error" };
                                     }
                                     break;
                                 default:
-                                    switch (bool.Parse(collectitem["collInsert"].ToString().TrimEnd()))
+                                    switch (bool.Parse(collectitem["collectionInsert"].ToString().TrimEnd()))
                                     {
                                         case true:
                                             dbparamlist.Clear();
                                             dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
-                                            dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                             dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
                                             dbparamlist.Add(new dbparam("@value", collectitem["value"].ToString().TrimEnd()));
                                             if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
@@ -158,8 +150,14 @@ namespace duretoryApi.Models
                         case "droplist":
                             return $"{item["title"].ToString().TrimEnd()}尚未選擇項目";
                         case "image":
-                        case "collections":
                             return $"{item["title"].ToString().TrimEnd()}尚未上傳圖檔";
+                        case "collections":
+                            switch (JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectionitems"].ToString().TrimEnd()).Count)
+                            {
+                                case 0:
+                                    return $"{item["title"].ToString().TrimEnd()}尚未上傳圖檔";
+                            }
+                            break;
                         default:
                             return $"{item["title"].ToString().TrimEnd()}尚未填寫資訊";
                     }

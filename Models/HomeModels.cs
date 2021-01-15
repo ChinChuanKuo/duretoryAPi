@@ -25,16 +25,17 @@ namespace duretoryApi.Models
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
             foreach (DataRow dr in mainRows.Rows)
             {
-                List<Dictionary<string, object>> collitems = new List<Dictionary<string, object>>();
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@formId", dr["formId"].ToString().TrimEnd()));
-                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId;", dbparamlist).Rows)
+                dbparamlist.Add(new dbparam("@id", "6"));
+                List<string> collections = new List<string>();
+                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@id;", dbparamlist).Rows)
                 {
-                    collitems.Add(new Dictionary<string, object>() { { "subId", drs["subId"].ToString().TrimEnd() }, { "value", drs["value"].ToString().TrimEnd() }, { "creator", drs["inoper"].ToString().TrimEnd() } });
+                    collections.Add(drs["value"].ToString().TrimEnd());
                 }
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
-                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "collection", dr["collection"].ToString().TrimEnd() }, { "collitems", new List<Dictionary<string, object>>().ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == otherData.userid.TrimEnd() } });
+                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == otherData.userid.TrimEnd() } });
             }
             return new sItemsModels() { showItem = itemCount != int.Parse(otherData.values.TrimEnd()) + mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
         }
@@ -57,16 +58,17 @@ namespace duretoryApi.Models
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
             foreach (DataRow dr in mainRows.Rows)
             {
-                List<Dictionary<string, object>> collitems = new List<Dictionary<string, object>>();
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@formId", dr["formId"].ToString().TrimEnd()));
+                dbparamlist.Add(new dbparam("@id", "6"));
+                List<string> collections = new List<string>();
                 foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId;", dbparamlist).Rows)
                 {
-                    collitems.Add(new Dictionary<string, object>() { { "subId", drs["subId"].ToString().TrimEnd() }, { "value", drs["value"].ToString().TrimEnd() }, { "creator", drs["inoper"].ToString().TrimEnd() } });
+                    collections.Add(drs["value"].ToString().TrimEnd());
                 }
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
-                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "collection", dr["collection"].ToString().TrimEnd() }, { "collitems", new List<Dictionary<string, object>>().ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == otherData.userid.TrimEnd() } });
+                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == otherData.userid.TrimEnd() } });
             }
             return new sItemsModels() { showItem = itemCount != int.Parse(otherData.values.TrimEnd()) + mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
         }
@@ -105,7 +107,8 @@ namespace duretoryApi.Models
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
             foreach (DataRow dr in mainRows.Rows)
             {
-                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>(), answeritems = new List<Dictionary<string, object>>(), collectitems = new List<Dictionary<string, object>>();
+                bool showFile = false, showImage = false;
+                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>(), answeritems = new List<Dictionary<string, object>>(), collectionitems = new List<Dictionary<string, object>>();
                 switch (dr["outValue"].ToString().TrimEnd())
                 {
                     case "radio":
@@ -125,16 +128,22 @@ namespace duretoryApi.Models
                             optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
                         }
                         break;
+                    case "image":
+                        showFile = dr["value"].ToString().TrimEnd() != ""; showImage = dr["value"].ToString().TrimEnd() != "";
+                        break;
                     case "collections":
                         dbparamlist.Clear();
+                        dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
-                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @iid;", dbparamlist).Rows)
+                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@iid;", dbparamlist).Rows)
                         {
-                            collectitems.Add(new Dictionary<string, object>() { { "id", drs["id"].ToString().TrimEnd() }, { "collImage", true }, { "collVideo", false }, { "collAudio", false }, { "value", drs["value"].ToString().TrimEnd() }, { "collInsert", false }, { "collDelete", false } });
+                            showFile = true;
+                            showImage = true;
+                            collectionitems.Add(new Dictionary<string, object>() { { "id", int.Parse(drs["id"].ToString().TrimEnd()) }, { "collectionImage", true }, { "collectionVideo", false }, { "collectionAudio", false }, { "value", drs["value"].ToString().TrimEnd() }, { "collectionInsert", false }, { "collectionDelete", drs["inoper"].ToString().TrimEnd() == dFormData.newid.TrimEnd() } });
                         }
                         break;
                 }
-                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", dr["value"].ToString().TrimEnd() }, { "showMenu", false }, { "showDrop", false }, { "showFile", false }, { "showImage", false }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collectitems", collectitems.ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() }, { "formModify", false } });
+                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", dr["value"].ToString().TrimEnd() }, { "showMenu", false }, { "showDrop", false }, { "showFile", showFile }, { "showImage", showImage }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collectionIndex", 0 }, { "collectionitems", collectionitems.ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() }, { "formModify", false } });
             }
             return new sRowsModels() { formId = dFormData.formId.TrimEnd(), tile = "", items = items, status = "istrue" };
         }
@@ -168,26 +177,26 @@ namespace duretoryApi.Models
                 switch (item["outValue"].ToString().TrimEnd())
                 {
                     case "collections":
-                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectitems"].ToString().TrimEnd()))
+                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectionitems"].ToString().TrimEnd()))
                         {
-                            switch (bool.Parse(collectitem["collDelete"].ToString().TrimEnd()))
+                            switch (bool.Parse(collectitem["collectionDelete"].ToString().TrimEnd()))
                             {
                                 case true:
                                     List<dbparam> dbparamlist = new List<dbparam>();
                                     dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                    dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                     if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
                                     {
                                         return new statusModels() { status = "error" };
                                     }
                                     break;
                                 default:
-                                    switch (bool.Parse(collectitem["collInsert"].ToString().TrimEnd()))
+                                    switch (bool.Parse(collectitem["collectionInsert"].ToString().TrimEnd()))
                                     {
                                         case true:
                                             dbparamlist = new List<dbparam>();
                                             dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                            dbparamlist.Add(new dbparam("@id", collectitem["id"].ToString().TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                             dbparamlist.Add(new dbparam("@inoper", iFormData.newid.TrimEnd()));
                                             dbparamlist.Add(new dbparam("@value", collectitem["value"].ToString().TrimEnd()));
                                             if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
