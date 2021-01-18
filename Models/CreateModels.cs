@@ -55,8 +55,9 @@ namespace duretoryApi.Models
                 return new statusModels() { status = checkValue };
             }
             database database = new database();
-            DataTable mainRows = new DataTable();
+            string formId = new sha256().new256("mssql", "flybookstring");
             List<dbparam> dbparamlist = new List<dbparam>();
+            dbparamlist.Add(new dbparam("@formId", formId));
             dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
             dbparamlist.Add(new dbparam("@attribute", iItemsData.items[0]["values"].ToString().TrimEnd()));
             dbparamlist.Add(new dbparam("@category", iItemsData.items[1]["values"].ToString().TrimEnd()));
@@ -69,11 +70,9 @@ namespace duretoryApi.Models
             dbparamlist.Add(new dbparam("@species", iItemsData.items[8]["values"].ToString().TrimEnd()));
             dbparamlist.Add(new dbparam("@count", iItemsData.items[9]["values"].ToString().TrimEnd()));
             dbparamlist.Add(new dbparam("@designer", iItemsData.items[10]["values"].ToString().TrimEnd()));
-            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.insertmainform @inoper,@attribute,@category,@customer,@sotime,@model,@collection,@mb,@sample,@species,@count,@designer;", dbparamlist);
-            switch (mainRows.Rows.Count)
+            if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertmainform @formId,@inoper,@attribute,@category,@customer,@sotime,@model,@collection,@mb,@sample,@species,@count,@designer;", dbparamlist) != "istrue")
             {
-                case 0:
-                    return new statusModels() { status = "error" };
+                return new statusModels() { status = "error" };
             }
             foreach (var item in iItemsData.items)
             {
@@ -86,7 +85,7 @@ namespace duretoryApi.Models
                             {
                                 case true:
                                     dbparamlist.Clear();
-                                    dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@formId", formId));
                                     dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                     if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
                                     {
@@ -98,7 +97,7 @@ namespace duretoryApi.Models
                                     {
                                         case true:
                                             dbparamlist.Clear();
-                                            dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@formId", formId));
                                             dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                             dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
                                             dbparamlist.Add(new dbparam("@value", collectitem["value"].ToString().TrimEnd()));
@@ -120,7 +119,7 @@ namespace duretoryApi.Models
                             {
                                 case true:
                                     dbparamlist.Clear();
-                                    dbparamlist.Add(new dbparam("@formId", mainRows.Rows[0]["formId"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@formId", formId));
                                     dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
                                     dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
                                     dbparamlist.Add(new dbparam("@value", answeritem["value"].ToString().TrimEnd()));

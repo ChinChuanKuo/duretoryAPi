@@ -167,7 +167,7 @@ namespace duretoryApi.Models
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
                 items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == sFiltData.newid.TrimEnd() } });
             }
-            return new sItemsModels() { showItem = itemCount != mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
+            return new sItemsModels() { showItem = itemCount != mainRows.Rows.Count, itemCount = itemCount, items = items, status = "success" };
         }
 
         public statusModels GetDeleteModels(dFormData dFormData, string cuurip)
