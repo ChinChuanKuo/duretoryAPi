@@ -11,7 +11,7 @@ namespace duretoryApi.Models
         {
             database database = new database();
             List<dbparam> dbparamlist = new List<dbparam>();
-            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countallmainform;", dbparamlist).Rows[0]["itemcount"].ToString().TrimEnd()), index = int.Parse(otherData.values.TrimEnd()) / 10;
+            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countallmainform;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = int.Parse(otherData.values.TrimEnd()) / 10;
             DataTable mainRows = new DataTable();
             dbparamlist.Add(new dbparam("@startId", index + 10 * index));
             dbparamlist.Add(new dbparam("@endId", index + 10 * (index + 1)));
@@ -27,9 +27,9 @@ namespace duretoryApi.Models
             {
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@formId", dr["formId"].ToString().TrimEnd()));
-                dbparamlist.Add(new dbparam("@id", "6"));
+                dbparamlist.Add(new dbparam("@iid", "6"));
                 List<string> collections = new List<string>();
-                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@id;", dbparamlist).Rows)
+                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@iid;", dbparamlist).Rows)
                 {
                     collections.Add(drs["value"].ToString().TrimEnd());
                 }
@@ -40,15 +40,42 @@ namespace duretoryApi.Models
             return new sItemsModels() { showItem = itemCount != int.Parse(otherData.values.TrimEnd()) + mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
         }
 
-        public sItemsModels GetScrollModels(otherData otherData, string cuurip)
+        public sOptonModels GetFilterModels(userData userData, string cuurip)
         {
+            int i = 0;
             database database = new database();
             List<dbparam> dbparamlist = new List<dbparam>();
-            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countallmainform;", dbparamlist).Rows[0]["itemcount"].ToString().TrimEnd()), index = int.Parse(otherData.values.TrimEnd()) / 10;
+            List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
+            foreach (DataRow dr in database.checkSelectSql("mssql", "flybookstring", "exec web.filtermoduleform;", dbparamlist).Rows)
+            {
+                dbparamlist.Clear();
+                dbparamlist.Add(new dbparam("@value", dr["folder"].ToString().TrimEnd()));
+                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>();
+                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.filtermodulevalue @value;", dbparamlist).Rows)
+                {
+                    optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
+                }
+                items.Add(new Dictionary<string, object>() { { "filtIndex", dr["iid"].ToString().TrimEnd() }, { "filtTile", dr["title"].ToString().TrimEnd() }, { "filtValue", "" }, { "filtMenu", false }, { "filtOptions", optionitems } });
+                i++;
+            }
+            return new sOptonModels() { items = items };
+        }
+
+        public sItemsModels GetScrollModels(sScollData sScollData, string cuurip)
+        {
+            string sqlCode = "";
+            foreach (var item in sScollData.items)
+            {
+                sqlCode += checkSqlCode(sqlCode, filterSqlCode(int.Parse(item["filtIndex"].ToString().TrimEnd()), item["filtValue"].ToString().TrimEnd()));
+            }
+            database database = new database();
+            List<dbparam> dbparamlist = new List<dbparam>();
+            dbparamlist.Add(new dbparam("@sqlCode", sqlCode));
+            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", sqlCode == "" ? "exec web.countallmainform;" : "exec web.countfilterallmainform @sqlCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = int.Parse(sScollData.value.TrimEnd()) / 10;
             DataTable mainRows = new DataTable();
             dbparamlist.Add(new dbparam("@startId", index + 10 * index));
             dbparamlist.Add(new dbparam("@endId", index + 10 * (index + 1)));
-            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchallmainform @startId,@endId;", dbparamlist);
+            mainRows = database.checkSelectSql("mssql", "flybookstring", sqlCode == "" ? "exec web.searchallmainform @startId,@endId;" : "exec web.searchfilterallmainform @startId,@endId,@sqlCode;", dbparamlist);
             switch (mainRows.Rows.Count)
             {
                 case 0:
@@ -60,17 +87,87 @@ namespace duretoryApi.Models
             {
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@formId", dr["formId"].ToString().TrimEnd()));
-                dbparamlist.Add(new dbparam("@id", "6"));
+                dbparamlist.Add(new dbparam("@iid", "6"));
                 List<string> collections = new List<string>();
-                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId;", dbparamlist).Rows)
+                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@iid;", dbparamlist).Rows)
                 {
                     collections.Add(drs["value"].ToString().TrimEnd());
                 }
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
-                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == otherData.userid.TrimEnd() } });
+                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == sScollData.newid.TrimEnd() } });
             }
-            return new sItemsModels() { showItem = itemCount != int.Parse(otherData.values.TrimEnd()) + mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
+            return new sItemsModels() { showItem = itemCount != int.Parse(sScollData.value.TrimEnd()) + mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
+        }
+
+        public string checkSqlCode(string sqlCode, string filterCode)
+        {
+            switch (sqlCode)
+            {
+                case "":
+                    return $"where {filterCode}";
+            }
+            return $" and {filterCode}";
+        }
+
+        public string filterSqlCode(int index, string value)
+        {
+            DataTable mainRows = new DataTable();
+            List<dbparam> dbparamlist = new List<dbparam>();
+            dbparamlist.Add(new dbparam("@iid", index));
+            mainRows = new database().checkSelectSql("mssql", "flybookstring", "exec web.searchfiltermoduleform @iid;", dbparamlist);
+            switch (mainRows.Rows.Count)
+            {
+                case 0:
+                    return "";
+            }
+            return $"{mainRows.Rows[0]["folder"].ToString().TrimEnd()} = '{value}'";
+        }
+
+        public sItemsModels GetSFilterModels(sFiltData sFiltData, string cuurip)
+        {
+            string sqlCode = "";
+            foreach (var item in sFiltData.items)
+            {
+                if (item["filtIndex"].ToString().TrimEnd() != sFiltData.index.ToString().TrimEnd())
+                {
+                    sqlCode += checkSqlCode(sqlCode, filterSqlCode(int.Parse(item["filtIndex"].ToString().TrimEnd()), item["filtValue"].ToString().TrimEnd()));
+                }
+            }
+            if (sFiltData.value.TrimEnd() != "")
+            {
+                sqlCode += checkSqlCode(sqlCode, filterSqlCode(int.Parse(sFiltData.index.TrimEnd()), sFiltData.value.TrimEnd()));
+            }
+            database database = new database();
+            List<dbparam> dbparamlist = new List<dbparam>();
+            dbparamlist.Add(new dbparam("@sqlCode", sqlCode));
+            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countfilterallmainform @sqlCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = 0;
+            DataTable mainRows = new DataTable();
+            dbparamlist.Add(new dbparam("@startId", index + 10 * index));
+            dbparamlist.Add(new dbparam("@endId", index + 10 * (index + 1)));
+            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchfilterallmainform @startId,@endId,@sqlCode;", dbparamlist);
+            switch (mainRows.Rows.Count)
+            {
+                case 0:
+                    return new sItemsModels() { status = "nodata" };
+            }
+            datetime datetime = new datetime();
+            List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
+            foreach (DataRow dr in mainRows.Rows)
+            {
+                dbparamlist.Clear();
+                dbparamlist.Add(new dbparam("@formId", dr["formId"].ToString().TrimEnd()));
+                dbparamlist.Add(new dbparam("@iid", "6"));
+                List<string> collections = new List<string>();
+                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@iid;", dbparamlist).Rows)
+                {
+                    collections.Add(drs["value"].ToString().TrimEnd());
+                }
+                dbparamlist.Clear();
+                dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
+                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") }, { "itemDelete", dr["inoper"].ToString().TrimEnd() == sFiltData.newid.TrimEnd() } });
+            }
+            return new sItemsModels() { showItem = itemCount != mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
         }
 
         public statusModels GetDeleteModels(dFormData dFormData, string cuurip)

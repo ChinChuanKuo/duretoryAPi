@@ -18,11 +18,27 @@ namespace duretoryApi.Controllers
         }
 
         [HttpPost]
-        [Route("scrollData")]
-        public JsonResult scrollData([FromBody] otherData otherData)
+        [Route("filterData")]
+        public JsonResult filterData([FromBody] userData userData)
         {
             string clientip = Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd() == "::1" ? "127.0.0.1" : Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd();
-            return Json(new HomeClass().GetScrollModels(otherData, clientip));
+            return Json(new HomeClass().GetFilterModels(userData, clientip));
+        }
+
+        [HttpPost]
+        [Route("scrollData")]
+        public JsonResult scrollData([FromBody] sScollData sScollData)
+        {
+            string clientip = Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd() == "::1" ? "127.0.0.1" : Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd();
+            return Json(new HomeClass().GetScrollModels(sScollData, clientip));
+        }
+
+        [HttpPost]
+        [Route("sFilterData")]
+        public JsonResult sFilterData([FromBody] sFiltData sFiltData)
+        {
+            string clientip = Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd() == "::1" ? "127.0.0.1" : Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd();
+            return Json(new HomeClass().GetSFilterModels(sFiltData, clientip));
         }
 
         [HttpPost]

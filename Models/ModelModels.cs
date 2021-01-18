@@ -88,4 +88,25 @@ namespace duretoryApi.Models
         [Required]
         public string status { get; set; }
     }
+
+    public class sOptonModels
+    {
+        [Required]
+        public List<Dictionary<string, object>> items { get; set; }
+    }
+
+    public class sScollData
+    {
+        public List<Dictionary<string, object>> items { get; set; }
+        public string value { get; set; }
+        public string newid { get; set; }
+    }
+
+    public class sFiltData
+    {
+        public List<Dictionary<string, object>> items { get; set; }
+        public string index { get; set; }
+        public string value { get; set; }
+        public string newid { get; set; }
+    }
 }
