@@ -35,7 +35,7 @@ namespace duretoryApi.Models
                 }
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
-                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
+                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "tile", dr["model"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
             }
             return new sItemsModels() { showItem = itemCount != int.Parse(otherData.values.TrimEnd()) + mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
         }
@@ -95,7 +95,7 @@ namespace duretoryApi.Models
                 }
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
-                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
+                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "tile", dr["model"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
             }
             return new sItemsModels() { showItem = itemCount != int.Parse(sScollData.value.TrimEnd()) + mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
         }
@@ -165,7 +165,7 @@ namespace duretoryApi.Models
                 }
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
-                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "attribute", dr["attribute"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
+                items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "tile", dr["model"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
             }
             return new sItemsModels() { showItem = itemCount != mainRows.Rows.Count, itemCount = itemCount, items = items, status = "success" };
         }
@@ -194,8 +194,7 @@ namespace duretoryApi.Models
             DataTable mainRows = new DataTable();
             List<dbparam> dbparamlist = new List<dbparam>();
             dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
-            dbparamlist.Add(new dbparam("@inoper", dFormData.newid.TrimEnd()));
-            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.checkmodulemainform @formId,@inoper", dbparamlist);
+            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.checkmodulemainform @formId", dbparamlist);
             switch (mainRows.Rows.Count)
             {
                 case 0:
@@ -255,7 +254,7 @@ namespace duretoryApi.Models
             string sqlCode = "";
             foreach (var item in iFormData.items)
             {
-                sqlCode = sqlCode == "" ? checkFolderValue(item["iid"].ToString().TrimEnd(), item["values"].ToString().TrimEnd()) : $", {checkFolderValue(item["iid"].ToString().TrimEnd(), item["values"].ToString().TrimEnd())}";
+                sqlCode = sqlCode == "" ? filterSqlCode(int.Parse(item["iid"].ToString().TrimEnd()), item["values"].ToString().TrimEnd()) : $", {filterSqlCode(int.Parse(item["iid"].ToString().TrimEnd()), item["values"].ToString().TrimEnd())}";
             }
             database database = new database();
             if (sqlCode != "")
@@ -329,34 +328,6 @@ namespace duretoryApi.Models
                 }
             }
             return new statusModels() { status = "istrue" };
-        }
-
-        public string checkFolderValue(string iid, string value)
-        {
-            switch (iid)
-            {
-                case "1":
-                    return $"attribute = '{value}'";
-                case "2":
-                    return $"category = '{value}'";
-                case "3":
-                    return $"customer = '{value}'";
-                case "4":
-                    return $"sotime = '{value}'";
-                case "5":
-                    return $"model = '{value}'";
-                case "6":
-                    return $"collection = '{value}'";
-                case "7":
-                    return $"mb = '{value}'";
-                case "8":
-                    return $"sample = '{value}'";
-                case "9":
-                    return $"species = '{value}'";
-                case "10":
-                    return $"count = '{value}'";
-            }
-            return $"designer = '{value}'";
         }
     }
 }
