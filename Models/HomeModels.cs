@@ -175,17 +175,39 @@ namespace duretoryApi.Models
             database database = new database();
             List<dbparam> dpbaramlist = new List<dbparam>();
             dpbaramlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
-            dpbaramlist.Add(new dbparam("@inoper", dFormData.newid.TrimEnd()));
-            switch (database.checkSelectSql("mssql", "flybookstring", "exec web.searchsinglemainform @formId,@inoper;", dpbaramlist).Rows.Count)
+            switch (database.checkSelectSql("mssql", "flybookstring", "exec web.searchsinglemainform @formId;", dpbaramlist).Rows.Count)
             {
                 case 0:
                     return new statusModels() { status = "nodata" };
             }
-            if (database.checkActiveSql("mssql", "flybookstring", "exec web.deleteallform @formId,@inoper;", dpbaramlist) != "istrue")
+            if (database.checkActiveSql("mssql", "flybookstring", "exec web.deleteallform @formId;", dpbaramlist) != "istrue")
             {
                 return new statusModels() { status = "error" };
             }
             return new statusModels() { status = "istrue" };
+        }
+
+        public sRowsModels GetSViewModels(dFormData dFormData, string cuurip)
+        {
+            database database = new database();
+            DataTable mainRows = new DataTable();
+            List<dbparam> dbparamlist = new List<dbparam>();
+            dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
+            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.checkmodulemainform @formId;", dbparamlist);
+            switch (mainRows.Rows.Count)
+            {
+                case 0:
+                    return new sRowsModels() { status = "nodata" };
+            }
+            dbparamlist.Add(new dbparam("@iid", "6"));
+            List<string> collections = new List<string>();
+            foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@iid;", dbparamlist).Rows)
+            {
+                collections.Add(drs["value"].ToString().TrimEnd());
+            }
+            List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
+            items.Add(new Dictionary<string, object>() { { "viewIndex", 0 }, { "viewections", collections.ToArray() }, {"attrTile",mainRows.Rows[0]["title"].ToString().TrimEnd() }, { "attribute", mainRows.Rows[0]["value"].ToString().TrimEnd() }, {"cateTile",mainRows.Rows[1]["title"].ToString().TrimEnd() }, { "category", mainRows.Rows[1]["value"].ToString().TrimEnd() }, {"custTile",mainRows.Rows[2]["title"].ToString().TrimEnd() }, { "customer", mainRows.Rows[2]["value"].ToString().TrimEnd() }, {"sotiTile",mainRows.Rows[3]["title"].ToString().TrimEnd() }, { "sotime", mainRows.Rows[3]["value"].ToString().TrimEnd() }, {"mbTile",mainRows.Rows[6]["title"].ToString().TrimEnd() }, { "mb", mainRows.Rows[6]["value"].ToString().TrimEnd() }, {"sampTile",mainRows.Rows[7]["title"].ToString().TrimEnd() }, { "sample", mainRows.Rows[7]["value"].ToString().TrimEnd() }, {"specTile",mainRows.Rows[8]["title"].ToString().TrimEnd() }, { "species", mainRows.Rows[8]["value"].ToString().TrimEnd() }, {"counTile",mainRows.Rows[9]["title"].ToString().TrimEnd() }, { "count", mainRows.Rows[9]["value"].ToString().TrimEnd() }, {"desiTile",mainRows.Rows[10]["title"].ToString().TrimEnd() }, { "designer", mainRows.Rows[10]["value"].ToString().TrimEnd() } });
+            return new sRowsModels() { formId = dFormData.formId.TrimEnd(), tile = mainRows.Rows[4]["value"].ToString().TrimEnd(), items = items, status = "istrue" };
         }
 
         public sRowsModels GetSItemModels(dFormData dFormData, string cuurip)
@@ -194,7 +216,7 @@ namespace duretoryApi.Models
             DataTable mainRows = new DataTable();
             List<dbparam> dbparamlist = new List<dbparam>();
             dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
-            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.checkmodulemainform @formId", dbparamlist);
+            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.checkmodulemainform @formId;", dbparamlist);
             switch (mainRows.Rows.Count)
             {
                 case 0:
@@ -328,6 +350,29 @@ namespace duretoryApi.Models
                 }
             }
             return new statusModels() { status = "istrue" };
+        }
+
+        public sItemModels GetSRefreshModels(dFormData dFormData, string cuurip)
+        {
+            database database = new database();
+            DataTable mainRows = new DataTable();
+            List<dbparam> dbparamlist = new List<dbparam>();
+            dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
+            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.checksinglemainform @formId;", dbparamlist);
+            switch (mainRows.Rows.Count)
+            {
+                case 0:
+                    return new sItemModels() { status = "nodata" };
+            }
+            dbparamlist.Add(new dbparam("@iid", "6"));
+            List<string> collections = new List<string>();
+            foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@iid;", dbparamlist).Rows)
+            {
+                collections.Add(drs["value"].ToString().TrimEnd());
+            }
+            List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
+            items.Add(new Dictionary<string, object>() { { "collections", collections.ToArray() }, { "tile", mainRows.Rows[0]["model"].ToString().TrimEnd() }, { "datetime", new datetime().differentime($"{mainRows.Rows[0]["indate"].ToString().TrimEnd()} {mainRows.Rows[0]["intime"].ToString().TrimEnd()}") } });
+            return new sItemModels() { items = items, status = "istrue" };
         }
     }
 }

@@ -50,6 +50,14 @@ namespace duretoryApi.Controllers
         }
 
         [HttpPost]
+        [Route("sViewData")]
+        public JsonResult sViewData([FromBody] dFormData dFormData)
+        {
+            string clientip = Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd() == "::1" ? "127.0.0.1" : Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd();
+            return Json(new HomeClass().GetSViewModels(dFormData, clientip));
+        }
+
+        [HttpPost]
         [Route("sItemData")]
         public JsonResult sItemData([FromBody] dFormData dFormData)
         {
@@ -63,6 +71,14 @@ namespace duretoryApi.Controllers
         {
             string clientip = Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd() == "::1" ? "127.0.0.1" : Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd();
             return Json(new HomeClass().GetInsertModels(iFormData, clientip));
+        }
+
+        [HttpPost]
+        [Route("sRefreshData")]
+        public JsonResult sRefreshData([FromBody] dFormData dFormData)
+        {
+            string clientip = Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd() == "::1" ? "127.0.0.1" : Request.HttpContext.Connection.RemoteIpAddress.ToString().TrimEnd();
+            return Json(new HomeClass().GetSRefreshModels(dFormData, clientip));
         }
     }
 }
