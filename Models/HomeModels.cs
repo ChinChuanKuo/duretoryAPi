@@ -205,8 +205,14 @@ namespace duretoryApi.Models
             {
                 collections.Add(drs["value"].ToString().TrimEnd());
             }
+            int[] rowInt = new int[] { 0, 1, 2, 3, 6, 7, 8, 9, 10 };
+            List<Dictionary<string, object>> dataitems = new List<Dictionary<string, object>>();
+            foreach (int row in rowInt)
+            {
+                dataitems.Add(new Dictionary<string, object>() { { "key", mainRows.Rows[row]["title"].ToString().TrimEnd() }, { "data", mainRows.Rows[row]["value"].ToString().TrimEnd() } });
+            }
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
-            items.Add(new Dictionary<string, object>() { { "viewIndex", 0 }, { "viewections", collections.ToArray() }, {"attrTile",mainRows.Rows[0]["title"].ToString().TrimEnd() }, { "attribute", mainRows.Rows[0]["value"].ToString().TrimEnd() }, {"cateTile",mainRows.Rows[1]["title"].ToString().TrimEnd() }, { "category", mainRows.Rows[1]["value"].ToString().TrimEnd() }, {"custTile",mainRows.Rows[2]["title"].ToString().TrimEnd() }, { "customer", mainRows.Rows[2]["value"].ToString().TrimEnd() }, {"sotiTile",mainRows.Rows[3]["title"].ToString().TrimEnd() }, { "sotime", mainRows.Rows[3]["value"].ToString().TrimEnd() }, {"mbTile",mainRows.Rows[6]["title"].ToString().TrimEnd() }, { "mb", mainRows.Rows[6]["value"].ToString().TrimEnd() }, {"sampTile",mainRows.Rows[7]["title"].ToString().TrimEnd() }, { "sample", mainRows.Rows[7]["value"].ToString().TrimEnd() }, {"specTile",mainRows.Rows[8]["title"].ToString().TrimEnd() }, { "species", mainRows.Rows[8]["value"].ToString().TrimEnd() }, {"counTile",mainRows.Rows[9]["title"].ToString().TrimEnd() }, { "count", mainRows.Rows[9]["value"].ToString().TrimEnd() }, {"desiTile",mainRows.Rows[10]["title"].ToString().TrimEnd() }, { "designer", mainRows.Rows[10]["value"].ToString().TrimEnd() } });
+            items.Add(new Dictionary<string, object>() { { "viewIndex", 0 }, { "viewections", collections.ToArray() }, { "dataitems", dataitems.ToArray() } });
             return new sRowsModels() { formId = dFormData.formId.TrimEnd(), tile = mainRows.Rows[4]["value"].ToString().TrimEnd(), items = items, status = "istrue" };
         }
 
