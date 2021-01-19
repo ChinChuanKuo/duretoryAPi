@@ -35,21 +35,11 @@ namespace duretoryApi.Models
                     case "checkbox":
                     case "droplist":
                         dbparamlist.Clear();
-                        DataTable subRows = new DataTable();
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
                         dbparamlist.Add(new dbparam("@inoper", userData.userid.TrimEnd()));
-                        subRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchoptionform @iid,@inoper;", dbparamlist);
-                        switch (subRows.Rows.Count)
+                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchoptionform @iid,@inoper;", dbparamlist).Rows)
                         {
-                            case 0:
-                                answeritems.Add(new Dictionary<string, object>() { { "id", 1 }, { "value", "" }, { "ansrDelete", false } });
-                                break;
-                            default:
-                                foreach (DataRow drs in subRows.Rows)
-                                {
-                                    answeritems.Add(new Dictionary<string, object>() { { "id", drs["id"].ToString().TrimEnd() }, { "value", drs["value"].ToString().TrimEnd() }, { "ansrDelete", false } });
-                                }
-                                break;
+                            answeritems.Add(new Dictionary<string, object>() { { "id", drs["id"].ToString().TrimEnd() }, { "value", drs["value"].ToString().TrimEnd() }, { "ansrDelete", false } });
                         }
                         break;
                 }
