@@ -205,7 +205,7 @@ namespace duretoryApi.Models
             {
                 collections.Add(drs["value"].ToString().TrimEnd());
             }
-            int[] rowInt = new int[] { 0, 1, 2, 3, 6, 7, 8, 9, 10 };
+            int[] rowInt = new int[] { 4, 0, 1, 2, 3, 6, 7, 8, 9, 10 };
             List<Dictionary<string, object>> dataitems = new List<Dictionary<string, object>>();
             foreach (int row in rowInt)
             {
@@ -213,7 +213,7 @@ namespace duretoryApi.Models
             }
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
             items.Add(new Dictionary<string, object>() { { "viewIndex", 0 }, { "viewections", collections.ToArray() }, { "dataitems", dataitems.ToArray() } });
-            return new sRowsModels() { formId = dFormData.formId.TrimEnd(), tile = mainRows.Rows[4]["value"].ToString().TrimEnd(), items = items, status = "istrue" };
+            return new sRowsModels() { formId = dFormData.formId.TrimEnd(), tile = "", items = items, status = "istrue" };
         }
 
         public sRowsModels GetSItemModels(dFormData dFormData, string cuurip)
