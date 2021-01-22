@@ -34,6 +34,13 @@ namespace duretoryApi.Models
         public string status { get; set; }
     }
 
+    public class sRowsData
+    {
+        public string formId { get; set; }
+        public string value { get; set; }
+        public string newid { get; set; }
+    }
+
     public class iFormData
     {
         public string formId { get; set; }

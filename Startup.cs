@@ -25,6 +25,8 @@ namespace duretoryApi
             {
                 options.AddPolicy("Home",
                     builder => builder.WithOrigins(items[0], items[1], items[2], items[3], items[4]).AllowAnyHeader().WithMethods("POST"));
+                options.AddPolicy("Search",
+                    builder => builder.WithOrigins(items[0], items[1], items[2], items[3], items[4]).AllowAnyHeader().WithMethods("POST"));
                 options.AddPolicy("Formor",
                     builder => builder.WithOrigins(items[0], items[1], items[2], items[3], items[4]).AllowAnyHeader().WithMethods("POST"));
                 options.AddPolicy("Create",
