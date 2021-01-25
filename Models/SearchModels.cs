@@ -42,7 +42,7 @@ namespace duretoryApi.Models
 
         public string RecordSqlCode(string value)
         {
-            return $"where attribute like '%{value}%' or category like '%{value}%' or customer like '%{value}%' or sotime like '%{value}%' or model like '%{value}%' or model like '%{value}%' or mb like '%{value}%' or sample like '%{value}%' or species like '%{value}%' or count like '%{value}%' or designer like '%{value}%'";
+            return $"where attribute like '%{value.ToLower()}%' or lower(category) like '%{value.ToLower()}%' or lower(customer) like '%{value.ToLower()}%' or lower(sotime) like '%{value.ToLower()}%' or lower(model) like '%{value.ToLower()}%' or lower(mb) like '%{value.ToLower()}%' or lower(sample) like '%{value.ToLower()}%' or lower(species) like '%{value.ToLower()}%' or lower(count) like '%{value.ToLower()}%' or lower(designer) like '%{value.ToLower()}%'";
         }
 
         public sOptonModels GetFilterModels(dFormData dFormData, string cuurip)
