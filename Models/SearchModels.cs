@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Data;
-using System.Text.Json;
 using duretoryApi.App_Code;
 
 namespace duretoryApi.Models
@@ -44,6 +43,28 @@ namespace duretoryApi.Models
         public string RecordSqlCode(string value)
         {
             return $"where attribute like '%{value}%' or category like '%{value}%' or customer like '%{value}%' or sotime like '%{value}%' or model like '%{value}%' or model like '%{value}%' or mb like '%{value}%' or sample like '%{value}%' or species like '%{value}%' or count like '%{value}%' or designer like '%{value}%'";
+        }
+
+        public sOptonModels GetFilterModels(dFormData dFormData, string cuurip)
+        {
+            int i = 0;
+            database database = new database();
+            List<dbparam> dbparamlist = new List<dbparam>();
+            List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
+            foreach (DataRow dr in database.checkSelectSql("mssql", "flybookstring", "exec web.filtermoduleform;", dbparamlist).Rows)
+            {
+                dbparamlist.Clear();
+                dbparamlist.Add(new dbparam("@value", dr["folder"].ToString().TrimEnd()));
+                dbparamlist.Add(new dbparam("@sqlCode", RecordSqlCode(dFormData.formId.TrimEnd())));
+                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>();
+                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchfiltermodulevalue @value,@sqlCode;", dbparamlist).Rows)
+                {
+                    optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
+                }
+                items.Add(new Dictionary<string, object>() { { "filtIndex", dr["iid"].ToString().TrimEnd() }, { "filtTile", dr["title"].ToString().TrimEnd() }, { "filtValue", "" }, { "filtMenu", false }, { "filtOptions", optionitems } });
+                i++;
+            }
+            return new sOptonModels() { items = items };
         }
     }
 }
