@@ -209,7 +209,24 @@ namespace duretoryApi.Models
             List<Dictionary<string, object>> dataitems = new List<Dictionary<string, object>>();
             foreach (int row in rowInt)
             {
-                dataitems.Add(new Dictionary<string, object>() { { "key", mainRows.Rows[row]["title"].ToString().TrimEnd() }, { "data", mainRows.Rows[row]["value"].ToString().TrimEnd() } });
+                List<string> data = new List<string>();
+                switch (mainRows.Rows[row]["outValue"].ToString().TrimEnd())
+                {
+                    case "radio":
+                    case "checkbox":
+                        dbparamlist.Clear();
+                        dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
+                        dbparamlist.Add(new dbparam("@iid", row + 1));
+                        foreach (DataRow dr in database.checkSelectSql("mssql", "flybookstring", "exec web.searchallsubform @formId,@iid;", dbparamlist).Rows)
+                        {
+                            data.Add(dr["value"].ToString().TrimEnd());
+                        }
+                        break;
+                    default:
+                        data.Add(mainRows.Rows[row]["value"].ToString().TrimEnd());
+                        break;
+                }
+                dataitems.Add(new Dictionary<string, object>() { { "key", mainRows.Rows[row]["title"].ToString().TrimEnd() }, { "data", data.ToArray() } });
             }
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
             items.Add(new Dictionary<string, object>() { { "viewIndex", 0 }, { "viewections", collections.ToArray() }, { "dataitems", dataitems.ToArray() } });
@@ -303,7 +320,7 @@ namespace duretoryApi.Models
                     case "collections":
                         foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
                         {
-                            switch (bool.Parse(collectitem["collectionDelete"].ToString().TrimEnd()))
+                            switch (bool.Parse(collectitem["collDelete"].ToString().TrimEnd()))
                             {
                                 case true:
                                     List<dbparam> dbparamlist = new List<dbparam>();
@@ -315,7 +332,7 @@ namespace duretoryApi.Models
                                     }
                                     break;
                                 default:
-                                    switch (bool.Parse(collectitem["collectionInsert"].ToString().TrimEnd()))
+                                    switch (bool.Parse(collectitem["collInsert"].ToString().TrimEnd()))
                                     {
                                         case true:
                                             dbparamlist = new List<dbparam>();
@@ -342,7 +359,7 @@ namespace duretoryApi.Models
                                 case true:
                                     List<dbparam> dbparamlist = new List<dbparam>();
                                     dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                    dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                     dbparamlist.Add(new dbparam("@inoper", iFormData.newid.TrimEnd()));
                                     dbparamlist.Add(new dbparam("@value", answeritem["value"].ToString().TrimEnd()));
                                     if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
