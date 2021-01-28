@@ -232,7 +232,7 @@ namespace duretoryApi.Models
             foreach (DataRow dr in mainRows.Rows)
             {
                 bool showFile = false, showImage = false;
-                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>(), answeritems = new List<Dictionary<string, object>>(), collectionitems = new List<Dictionary<string, object>>();
+                List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>(), answeritems = new List<Dictionary<string, object>>(), collitems = new List<Dictionary<string, object>>();
                 switch (dr["outValue"].ToString().TrimEnd())
                 {
                     case "radio":
@@ -263,11 +263,11 @@ namespace duretoryApi.Models
                         {
                             showFile = true;
                             showImage = true;
-                            collectionitems.Add(new Dictionary<string, object>() { { "id", int.Parse(drs["id"].ToString().TrimEnd()) }, { "collectionImage", true }, { "collectionVideo", false }, { "collectionAudio", false }, { "value", drs["value"].ToString().TrimEnd() }, { "collectionInsert", false }, { "collectionDelete", drs["inoper"].ToString().TrimEnd() == dFormData.newid.TrimEnd() } });
+                            collitems.Add(new Dictionary<string, object>() { { "id", int.Parse(drs["id"].ToString().TrimEnd()) }, { "showImage", true }, { "showVideo", false }, { "showAudio", false }, { "value", drs["value"].ToString().TrimEnd() }, { "collInsert", false }, { "collDelete", drs["inoper"].ToString().TrimEnd() == dFormData.newid.TrimEnd() } });
                         }
                         break;
                 }
-                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", dr["value"].ToString().TrimEnd() }, { "showMenu", false }, { "showDrop", false }, { "showFile", showFile }, { "showImage", showImage }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collectionIndex", 0 }, { "collectionitems", collectionitems.ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() }, { "formModify", false } });
+                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", dr["value"].ToString().TrimEnd() }, { "showMenu", false }, { "showDrop", false }, { "showFile", showFile }, { "showImage", showImage }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collIndex", 0 }, { "collitems", collitems.ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() }, { "formModify", false } });
             }
             return new sRowsModels() { formId = dFormData.formId.TrimEnd(), tile = "", items = items, status = "istrue" };
         }
@@ -301,7 +301,7 @@ namespace duretoryApi.Models
                 switch (item["outValue"].ToString().TrimEnd())
                 {
                     case "collections":
-                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectionitems"].ToString().TrimEnd()))
+                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
                         {
                             switch (bool.Parse(collectitem["collectionDelete"].ToString().TrimEnd()))
                             {

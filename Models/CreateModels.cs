@@ -42,7 +42,7 @@ namespace duretoryApi.Models
                         }
                         break;
                 }
-                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", "" }, { "showMenu", false }, { "showDrop", false }, { "showFile", false }, { "showImage", false }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collectionIndex", 0 }, { "collectionitems", new List<Dictionary<string, object>>().ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() } });
+                items.Add(new Dictionary<string, object>() { { "iid", dr["iid"].ToString().TrimEnd() }, { "title", dr["title"].ToString().TrimEnd() }, { "values", "" }, { "showMenu", false }, { "showDrop", false }, { "showFile", false }, { "showImage", false }, { "showVideo", false }, { "showAudio", false }, { "outValue", dr["outValue"].ToString().TrimEnd() }, { "showShow", dr["showed"].ToString().TrimEnd() == "1" }, { "showCheck", dr["checked"].ToString().TrimEnd() == "1" }, { "showFilter", dr["filtered"].ToString().TrimEnd() == "1" }, { "collIndex", 0 }, { "collitems", new List<Dictionary<string, object>>().ToArray() }, { "optionitems", optionitems.ToArray() }, { "answeritems", answeritems.ToArray() } });
             }
             return new sItemModels() { items = items, status = "istrue" };
         }
@@ -79,7 +79,7 @@ namespace duretoryApi.Models
                 switch (item["outValue"].ToString().TrimEnd())
                 {
                     case "collections":
-                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectionitems"].ToString().TrimEnd()))
+                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
                         {
                             switch (bool.Parse(collectitem["collectionDelete"].ToString().TrimEnd()))
                             {
@@ -151,7 +151,7 @@ namespace duretoryApi.Models
                         case "image":
                             return $"{item["title"].ToString().TrimEnd()}尚未上傳圖檔";
                         case "collections":
-                            switch (JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collectionitems"].ToString().TrimEnd()).Count)
+                            switch (JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()).Count)
                             {
                                 case 0:
                                     return $"{item["title"].ToString().TrimEnd()}尚未上傳圖檔";
