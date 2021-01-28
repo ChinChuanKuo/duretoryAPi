@@ -79,9 +79,9 @@ namespace duretoryApi.Models
                 switch (item["outValue"].ToString().TrimEnd())
                 {
                     case "collections":
-                        foreach (var collectitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
+                        foreach (var collitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
                         {
-                            switch (bool.Parse(collectitem["collDelete"].ToString().TrimEnd()))
+                            switch (bool.Parse(collitem["collDelete"].ToString().TrimEnd()))
                             {
                                 case true:
                                     dbparamlist.Clear();
@@ -93,14 +93,14 @@ namespace duretoryApi.Models
                                     }
                                     break;
                                 default:
-                                    switch (bool.Parse(collectitem["collInsert"].ToString().TrimEnd()))
+                                    switch (bool.Parse(collitem["collInsert"].ToString().TrimEnd()))
                                     {
                                         case true:
                                             dbparamlist.Clear();
                                             dbparamlist.Add(new dbparam("@formId", formId));
                                             dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                             dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
-                                            dbparamlist.Add(new dbparam("@value", collectitem["value"].ToString().TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@value", collitem["value"].ToString().TrimEnd()));
                                             if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
                                             {
                                                 return new statusModels() { status = "error" };
