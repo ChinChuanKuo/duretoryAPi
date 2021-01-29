@@ -42,21 +42,20 @@ namespace duretoryApi.Models
 
         public sOptonModels GetFilterModels(userData userData, string cuurip)
         {
-            int i = 0;
             database database = new database();
             List<dbparam> dbparamlist = new List<dbparam>();
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
             foreach (DataRow dr in database.checkSelectSql("mssql", "flybookstring", "exec web.filtermoduleform;", dbparamlist).Rows)
             {
                 dbparamlist.Clear();
-                dbparamlist.Add(new dbparam("@value", dr["folder"].ToString().TrimEnd()));
+                bool doubleOption = dr["outValue"].ToString().TrimEnd() == "radio" || dr["outValue"].ToString().TrimEnd() == "checkbox";
+                dbparamlist.Add(new dbparam("@value", doubleOption ? dr["iid"].ToString().TrimEnd() : dr["folder"].ToString().TrimEnd()));
                 List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>();
-                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.filtermodulevalue @value;", dbparamlist).Rows)
+                foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", doubleOption ? "exec web.filtermoduleoption @value;" : "exec web.filtermodulevalue @value;", dbparamlist).Rows)
                 {
                     optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
                 }
-                items.Add(new Dictionary<string, object>() { { "filtIndex", dr["iid"].ToString().TrimEnd() }, { "filtTile", dr["title"].ToString().TrimEnd() }, { "filtValue", "" }, { "filtMenu", false }, { "filtOptions", optionitems } });
-                i++;
+                items.Add(new Dictionary<string, object>() { { "filtIndex", dr["iid"].ToString().TrimEnd() }, { "filtTile", dr["title"].ToString().TrimEnd() }, { "filtOutValue", dr["outValue"].ToString().TrimEnd() }, { "filtValue", "" }, { "filtMenu", false }, { "filtOptions", optionitems } });
             }
             return new sOptonModels() { items = items };
         }
@@ -124,28 +123,53 @@ namespace duretoryApi.Models
             return $"{mainRows.Rows[0]["folder"].ToString().TrimEnd()} = '{value}'";
         }
 
+        public string filterSubCode(string value)
+        {
+            return $"value = '{value}'";
+        }
+
         public sItemsModels GetSFilterModels(sFiltData sFiltData, string cuurip)
         {
-            string sqlCode = "";
+            string sqlCode = "", subCode = "";
             foreach (var item in sFiltData.items)
             {
                 if (item["filtIndex"].ToString().TrimEnd() != sFiltData.index.ToString().TrimEnd())
                 {
-                    sqlCode += checkSqlCode(sqlCode, filterSqlCode(int.Parse(item["filtIndex"].ToString().TrimEnd()), item["filtValue"].ToString().TrimEnd()));
+                    switch (item["filtOutValue"].ToString().TrimEnd())
+                    {
+                        case "radio":
+                        case "checkbox":
+                            subCode += checkSqlCode(subCode, filterSubCode(item["filtValue"].ToString().TrimEnd()));
+                            break;
+                        default:
+                            sqlCode += checkSqlCode(sqlCode, filterSqlCode(int.Parse(item["filtIndex"].ToString().TrimEnd()), item["filtValue"].ToString().TrimEnd()));
+                            break;
+
+                    }
                 }
             }
             if (sFiltData.value.TrimEnd() != "")
             {
-                sqlCode += checkSqlCode(sqlCode, filterSqlCode(int.Parse(sFiltData.index.TrimEnd()), sFiltData.value.TrimEnd()));
+                switch (sFiltData.outValue.TrimEnd())
+                {
+                    case "radio":
+                    case "checkbox":
+                        subCode += checkSqlCode(subCode, filterSubCode(sFiltData.value.ToString().TrimEnd()));
+                        break;
+                    default:
+                        sqlCode += checkSqlCode(sqlCode, filterSqlCode(int.Parse(sFiltData.index.TrimEnd()), sFiltData.value.TrimEnd()));
+                        break;
+                }
             }
             database database = new database();
             List<dbparam> dbparamlist = new List<dbparam>();
             dbparamlist.Add(new dbparam("@sqlCode", sqlCode));
-            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countfilterallmainform @sqlCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = 0;
+            dbparamlist.Add(new dbparam("@subCode", subCode));
+            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countfilterallmainform @sqlCode,@subCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = 0;
             DataTable mainRows = new DataTable();
             dbparamlist.Add(new dbparam("@startId", index + 10 * index));
             dbparamlist.Add(new dbparam("@endId", index + 10 * (index + 1)));
-            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchfilterallmainform @startId,@endId,@sqlCode;", dbparamlist);
+            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchfilterallmainform @startId,@endId,@sqlCode,@subCode;", dbparamlist);
             switch (mainRows.Rows.Count)
             {
                 case 0:
@@ -167,7 +191,7 @@ namespace duretoryApi.Models
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
                 items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "tile", dr["model"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
             }
-            return new sItemsModels() { showItem = itemCount != mainRows.Rows.Count, itemCount = itemCount, items = items, status = "success" };
+            return new sItemsModels() { showItem = itemCount != mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
         }
 
         public statusModels GetDeleteModels(dFormData dFormData, string cuurip)

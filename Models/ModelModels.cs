@@ -113,6 +113,7 @@ namespace duretoryApi.Models
     {
         public List<Dictionary<string, object>> items { get; set; }
         public string index { get; set; }
+        public string outValue { get; set; }
         public string value { get; set; }
         public string newid { get; set; }
     }
