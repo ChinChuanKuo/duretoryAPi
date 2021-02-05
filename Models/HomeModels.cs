@@ -279,6 +279,7 @@ namespace duretoryApi.Models
                     case "radio":
                     case "checkbox":
                         dbparamlist.Clear();
+                        dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
                         foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @iid;", dbparamlist).Rows)
                         {
@@ -287,6 +288,7 @@ namespace duretoryApi.Models
                         break;
                     case "droplist":
                         dbparamlist.Clear();
+                        dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
                         foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @iid;", dbparamlist).Rows)
                         {
