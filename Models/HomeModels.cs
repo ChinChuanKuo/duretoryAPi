@@ -371,7 +371,7 @@ namespace duretoryApi.Models
                                         case true:
                                             List<dbparam> dbparamlist = new List<dbparam>();
                                             dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                            dbparamlist.Add(new dbparam("@id", collitem["iid"].ToString().TrimEnd()));
+                                            dbparamlist.Add(new dbparam("@id", collitem["id"].ToString().TrimEnd()));
                                             if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
                                             {
                                                 return new statusModels() { status = "error" };
@@ -402,7 +402,7 @@ namespace duretoryApi.Models
                                 default:
                                     dbparamlist = new List<dbparam>();
                                     dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                    dbparamlist.Add(new dbparam("@id", answeritem["iid"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
                                     if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
                                     {
                                         return new statusModels() { status = "error" };
