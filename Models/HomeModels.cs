@@ -342,33 +342,26 @@ namespace duretoryApi.Models
                 switch (item["outValue"].ToString().TrimEnd())
                 {
                     case "collections":
+                        List<dbparam> dbparamlist = new List<dbparam>();
+                        dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
+                        dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
+                        if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
+                        {
+                            return new statusModels() { status = "error" };
+                        }
                         foreach (var collitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
                         {
-                            switch (bool.Parse(collitem["collDelete"].ToString().TrimEnd()))
+                            switch (bool.Parse(collitem["collInsert"].ToString().TrimEnd()))
                             {
                                 case true:
-                                    List<dbparam> dbparamlist = new List<dbparam>();
+                                    dbparamlist = new List<dbparam>();
                                     dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                    dbparamlist.Add(new dbparam("@id", collitem["id"].ToString().TrimEnd()));
-                                    if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
+                                    dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@inoper", iFormData.newid.TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@value", collitem["value"].ToString().TrimEnd()));
+                                    if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
                                     {
                                         return new statusModels() { status = "error" };
-                                    }
-                                    break;
-                                default:
-                                    switch (bool.Parse(collitem["collInsert"].ToString().TrimEnd()))
-                                    {
-                                        case true:
-                                            dbparamlist = new List<dbparam>();
-                                            dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                            dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
-                                            dbparamlist.Add(new dbparam("@inoper", iFormData.newid.TrimEnd()));
-                                            dbparamlist.Add(new dbparam("@value", collitem["value"].ToString().TrimEnd()));
-                                            if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
-                                            {
-                                                return new statusModels() { status = "error" };
-                                            }
-                                            break;
                                     }
                                     break;
                             }
@@ -376,26 +369,24 @@ namespace duretoryApi.Models
                         break;
                     case "radio":
                     case "checkbox":
+                        dbparamlist = new List<dbparam>();
+                        dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
+                        dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
+                        if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
+                        {
+                            return new statusModels() { status = "error" };
+                        }
                         foreach (var answeritem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["answeritems"].ToString().TrimEnd()))
                         {
                             switch (bool.Parse(answeritem["showAnswer"].ToString().TrimEnd()))
                             {
                                 case true:
-                                    List<dbparam> dbparamlist = new List<dbparam>();
+                                    dbparamlist.Clear();
                                     dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
                                     dbparamlist.Add(new dbparam("@id", item["iid"].ToString().TrimEnd()));
                                     dbparamlist.Add(new dbparam("@inoper", iFormData.newid.TrimEnd()));
                                     dbparamlist.Add(new dbparam("@value", answeritem["value"].ToString().TrimEnd()));
                                     if (database.checkActiveSql("mssql", "flybookstring", "exec web.insertsubform @formId,@id,@inoper,@value;", dbparamlist) != "istrue")
-                                    {
-                                        return new statusModels() { status = "error" };
-                                    }
-                                    break;
-                                default:
-                                    dbparamlist = new List<dbparam>();
-                                    dbparamlist.Add(new dbparam("@formId", iFormData.formId.TrimEnd()));
-                                    dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
-                                    if (database.checkActiveSql("mssql", "flybookstring", "exec web.deletesubform @formId,@id;", dbparamlist) != "istrue")
                                     {
                                         return new statusModels() { status = "error" };
                                     }
