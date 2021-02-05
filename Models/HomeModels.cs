@@ -281,7 +281,7 @@ namespace duretoryApi.Models
                         dbparamlist.Clear();
                         dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
-                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @formId,@iid;", dbparamlist).Rows)
+                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptiondetail @formId,@iid;", dbparamlist).Rows)
                         {
                             answeritems.Add(new Dictionary<string, object>() { { "id", drs["id"].ToString().TrimEnd() }, { "value", drs["value"].ToString().TrimEnd() }, { "showAnswer", drs["showAnswer"].ToString().TrimEnd() == "1" } });
                         }
@@ -290,7 +290,7 @@ namespace duretoryApi.Models
                         dbparamlist.Clear();
                         dbparamlist.Add(new dbparam("@formId", dFormData.formId.TrimEnd()));
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
-                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @formId,@iid;", dbparamlist).Rows)
+                        foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptiondetail @formId,@iid;", dbparamlist).Rows)
                         {
                             optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
                         }
