@@ -283,7 +283,7 @@ namespace duretoryApi.Models
                         dbparamlist.Add(new dbparam("@iid", dr["iid"].ToString().TrimEnd()));
                         foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchalloptionform @iid;", dbparamlist).Rows)
                         {
-                            answeritems.Add(new Dictionary<string, object>() { { "id", drs["id"].ToString().TrimEnd() }, { "value", drs["value"].ToString().TrimEnd() }, { "showAnswer", drs["showAnswer"].ToString().TrimEnd() != "" } });
+                            answeritems.Add(new Dictionary<string, object>() { { "id", drs["id"].ToString().TrimEnd() }, { "value", drs["value"].ToString().TrimEnd() }, { "showAnswer", drs["showAnswer"].ToString().TrimEnd() == "1" } });
                         }
                         break;
                     case "droplist":
