@@ -306,7 +306,7 @@ namespace duretoryApi.Models
                         {
                             showFile = true;
                             showImage = true;
-                            collitems.Add(new Dictionary<string, object>() { { "id", int.Parse(drs["id"].ToString().TrimEnd()) }, { "showImage", true }, { "showVideo", false }, { "showAudio", false }, { "value", drs["value"].ToString().TrimEnd() }, { "collInsert", false }, { "collDelete", drs["inoper"].ToString().TrimEnd() == dFormData.newid.TrimEnd() } });
+                            collitems.Add(new Dictionary<string, object>() { { "id", int.Parse(drs["id"].ToString().TrimEnd()) }, { "showImage", true }, { "showVideo", false }, { "showAudio", false }, { "value", drs["value"].ToString().TrimEnd() }, { "showDelete", drs["inoper"].ToString().TrimEnd() == dFormData.newid.TrimEnd() }, { "collDelete", false } });
                         }
                         break;
                 }
@@ -353,6 +353,7 @@ namespace duretoryApi.Models
                         }
                         foreach (var collitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
                         {
+                            System.Console.WriteLine(bool.Parse(collitem["collDelete"].ToString().TrimEnd()));
                             switch (bool.Parse(collitem["collDelete"].ToString().TrimEnd()))
                             {
                                 case false:
