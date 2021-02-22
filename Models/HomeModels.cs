@@ -353,7 +353,6 @@ namespace duretoryApi.Models
                         }
                         foreach (var collitem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["collitems"].ToString().TrimEnd()))
                         {
-                            System.Console.WriteLine(bool.Parse(collitem["collDelete"].ToString().TrimEnd()));
                             switch (bool.Parse(collitem["collDelete"].ToString().TrimEnd()))
                             {
                                 case false:
