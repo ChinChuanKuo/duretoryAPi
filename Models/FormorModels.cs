@@ -70,14 +70,34 @@ namespace duretoryApi.Models
                     case "radio":
                     case "checkbox":
                     case "droplist":
+                        List<string> deleteArray = new List<string>();
                         foreach (var answeritem in JsonSerializer.Deserialize<List<Dictionary<string, object>>>(item["answeritems"].ToString().TrimEnd()))
+                        {
+                            switch (bool.Parse(answeritem["ansrDelete"].ToString().TrimEnd()))
+                            {
+                                case false:
+                                    dbparamlist.Clear();
+                                    dbparamlist.Add(new dbparam("@iid", item["iid"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
+                                    dbparamlist.Add(new dbparam("@value", answeritem["value"].ToString().TrimEnd()));
+                                    if (database.checkActiveSql("mssql", "flybookstring", "exec web.checkoptionform @iid,@id,@inoper,@value;", dbparamlist) != "istrue")
+                                    {
+                                        return new statusModels() { status = "error" };
+                                    }
+                                    break;
+                                case true:
+                                    deleteArray.Add(answeritem["id"].ToString().TrimEnd());
+                                    break;
+                            }
+                        }
+                        if (deleteArray.Count > 0)
                         {
                             dbparamlist.Clear();
                             dbparamlist.Add(new dbparam("@iid", item["iid"].ToString().TrimEnd()));
-                            dbparamlist.Add(new dbparam("@id", answeritem["id"].ToString().TrimEnd()));
+                            dbparamlist.Add(new dbparam("@id", string.Join(",", deleteArray)));
                             dbparamlist.Add(new dbparam("@inoper", iItemsData.newid.TrimEnd()));
-                            dbparamlist.Add(new dbparam("@value", answeritem["value"].ToString().TrimEnd()));
-                            if (database.checkActiveSql("mssql", "flybookstring", "exec web.checkoptionform @iid,@id,@inoper,@value;", dbparamlist) != "istrue")
+                            if (database.checkActiveSql("mssql", "flybookstring", "exec web.deleteoptionform @iid,@id,@inoper;", dbparamlist) != "istrue")
                             {
                                 return new statusModels() { status = "error" };
                             }
