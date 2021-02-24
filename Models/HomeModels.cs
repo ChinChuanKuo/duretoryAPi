@@ -51,6 +51,7 @@ namespace duretoryApi.Models
                 bool doubleOption = dr["outValue"].ToString().TrimEnd() == "radio" || dr["outValue"].ToString().TrimEnd() == "checkbox";
                 dbparamlist.Add(new dbparam("@value", doubleOption ? dr["iid"].ToString().TrimEnd() : dr["folder"].ToString().TrimEnd()));
                 List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>();
+                optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", "" } });
                 foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", doubleOption ? "exec web.filtermoduleoption @value;" : "exec web.filtermodulevalue @value;", dbparamlist).Rows)
                 {
                     optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
@@ -125,6 +126,11 @@ namespace duretoryApi.Models
 
         public string filterSubCode(string value)
         {
+            switch (value)
+            {
+                case "":
+                    return "";
+            }
             return $"value = '{value}'";
         }
 
@@ -161,23 +167,16 @@ namespace duretoryApi.Models
                         break;
                 }
             }
+            datetime datetime = new datetime();
             database database = new database();
             List<dbparam> dbparamlist = new List<dbparam>();
             dbparamlist.Add(new dbparam("@sqlCode", sqlCode));
             dbparamlist.Add(new dbparam("@subCode", subCode));
-            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countfilterallmainform @sqlCode,@subCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = 0;
-            DataTable mainRows = new DataTable();
+            int total = 0, itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countfilterallmainform @sqlCode,@subCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = 0;
             dbparamlist.Add(new dbparam("@startId", index + 10 * index));
             dbparamlist.Add(new dbparam("@endId", index + 10 * (index + 1)));
-            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchfilterallmainform @startId,@endId,@sqlCode,@subCode;", dbparamlist);
-            switch (mainRows.Rows.Count)
-            {
-                case 0:
-                    return new sItemsModels() { status = "nodata" };
-            }
-            datetime datetime = new datetime();
             List<Dictionary<string, object>> items = new List<Dictionary<string, object>>();
-            foreach (DataRow dr in mainRows.Rows)
+            foreach (DataRow dr in database.checkSelectSql("mssql", "flybookstring", "exec web.searchfilterallmainform @startId,@endId,@sqlCode,@subCode;", dbparamlist).Rows)
             {
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@formId", dr["formId"].ToString().TrimEnd()));
@@ -190,8 +189,9 @@ namespace duretoryApi.Models
                 dbparamlist.Clear();
                 dbparamlist.Add(new dbparam("@newid", dr["inoper"].ToString().TrimEnd()));
                 items.Add(new Dictionary<string, object>() { { "id", dr["formId"].ToString().TrimEnd() }, { "index", 0 }, { "collections", collections.ToArray() }, { "tile", dr["model"].ToString().TrimEnd() }, { "creator", database.checkSelectSql("mssql", "sysstring", "exec web.searchsiteberinfo @newid;", dbparamlist).Rows[0]["username"].ToString().TrimEnd().Substring(0, 1) }, { "datetime", datetime.differentime($"{dr["indate"].ToString().TrimEnd()} {dr["intime"].ToString().TrimEnd()}") } });
+                total++;
             }
-            return new sItemsModels() { showItem = itemCount != mainRows.Rows.Count, itemCount = itemCount, items = items, status = "istrue" };
+            return new sItemsModels() { showItem = itemCount != total, itemCount = itemCount, items = items, status = "istrue" };
         }
 
         public statusModels GetDeleteModels(dFormData dFormData, string cuurip)

@@ -11,11 +11,11 @@ namespace duretoryApi.Models
             database database = new database();
             List<dbparam> dbparamlist = new List<dbparam>();
             dbparamlist.Add(new dbparam("@sqlCode", RecordSqlCode(sRowsData.formId.TrimEnd())));
-            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countfilterallmainform @sqlCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = int.Parse(sRowsData.value.TrimEnd()) / 10;
+            int itemCount = int.Parse(database.checkSelectSql("mssql", "flybookstring", "exec web.countfiltersearchform @sqlCode;", dbparamlist).Rows[0]["itemCount"].ToString().TrimEnd()), index = int.Parse(sRowsData.value.TrimEnd()) / 10;
             DataTable mainRows = new DataTable();
             dbparamlist.Add(new dbparam("@startId", index + 10 * index));
             dbparamlist.Add(new dbparam("@endId", index + 10 * (index + 1)));
-            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchfilterallmainform @startId,@endId,@sqlCode;", dbparamlist);
+            mainRows = database.checkSelectSql("mssql", "flybookstring", "exec web.searchfilterallsearchform @startId,@endId,@sqlCode;", dbparamlist);
             switch (mainRows.Rows.Count)
             {
                 case 0:
@@ -57,6 +57,7 @@ namespace duretoryApi.Models
                 dbparamlist.Add(new dbparam("@value", dr["folder"].ToString().TrimEnd()));
                 dbparamlist.Add(new dbparam("@sqlCode", RecordSqlCode(dFormData.formId.TrimEnd())));
                 List<Dictionary<string, object>> optionitems = new List<Dictionary<string, object>>();
+                optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", "" } });
                 foreach (DataRow drs in database.checkSelectSql("mssql", "flybookstring", "exec web.searchfiltermodulevalue @value,@sqlCode;", dbparamlist).Rows)
                 {
                     optionitems.Add(new Dictionary<string, object>() { { "optionPadding", false }, { "value", drs["value"].ToString().TrimEnd() } });
